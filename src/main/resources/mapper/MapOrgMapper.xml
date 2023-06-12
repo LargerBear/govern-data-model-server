@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.freesofts.desktop.mapper.MapOrgMapper">
+
+
+    <select id="selectTreeData" resultType="com.freesofts.common.dto.BasicNodeDto">
+        select org.id, org.parent_id as parentId, org.short_name as title,
+               (select count(0) from map_org tmp where tmp.parent_id = org.id) as childSize
+        from map_org org where org.parent_id = #{pkey} order by org.sort
+    </select>
+
+
+
+</mapper>

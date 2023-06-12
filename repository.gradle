@@ -1,0 +1,13 @@
+
+repositories {
+    mavenLocal()
+    maven { url 'http://oa.free-softs.com:8082/nexus/content/repositories/FreeSoftGovernSnapshots' }
+    maven { url 'http://oa.free-softs.com:8082/nexus/content/repositories/FreesoftGovernReleases' }
+    maven { url 'http://oa.free-softs.com:8082/nexus/content/repositories/thirdparty' }
+    maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+    mavenCentral()
+}
+
+ext {
+    set("springCloudVersion", "Greenwich.SR6")
+}

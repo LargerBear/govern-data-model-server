@@ -1,0 +1,104 @@
+server:
+  port: ${ACCESS_PORT:7615}
+spring:
+  project:
+    name: ${PROJECT_NAME:govern}
+  application:
+    name: govern-data-model-server
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      config:
+        server-addr: api.nacos.net
+        encode: utf-8
+        group: DEFAULT_GROUP
+        file-extension: yml
+        prefix: ${spring.application.name}
+        namespace: ${NACOS_NAMESPACE:4672684d-ae96-485e-9d51-e4d128e6201e}
+        username: govern
+        password: govern@pwd.com
+      discovery:
+        ip: ${ACCESS_DOMAIN:192.168.1.198}
+        port: ${server.port}
+        server-addr: api.nacos.net
+        namespace: ${NACOS_NAMESPACE:4672684d-ae96-485e-9d51-e4d128e6201e}
+        username: govern
+        password: govern@pwd.com
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  devtools:
+    restart:
+      enabled: true
+      additional-paths: src/main/java
+knife4j:
+  contact:
+    name: Hangzhou Fuli software Computer Co., Ltd
+    url: http://www.free-softs.com
+    email: 123456789@qq.com
+  document:
+    groupName: govern-data-model-server
+    title: desktop
+    basePackage: com.freesofts.model.controller
+    version: 1.0.0
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 9000
+        readTimeout: 9000
+        loggerLevel: basic
+  okhttp:
+    enabled: true
+  compression:
+    request:
+      enabled: true
+      mime-types: text/xml,application/xml,application/json
+      min-request-size: 2048
+    response:
+      enabled: true
+mybatis:
+  type-aliases-package: com.freesofts.model.model
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+management:
+  endpoints:
+    web:
+      base-path: /supervise
+      exposure:
+        include: "*"
+  endpoint:
+    env:
+      enabled: false
+    beans:
+      enabled: false
+    configprops:
+      enabled: false
+    heapdump:
+      enabled: false
+    threaddump:
+      enabled: false
+    httptrace:
+      enabled: false
+    logfile:
+      enabled: false
+    loggers:
+      enabled: false
+    integrationgraph:
+      enabled: false
+    caches:
+      enabled: false
+    conditions:
+      enabled: false
+    health:
+      show-details: always
+logging:
+  level:
+    com.alibaba.cloud.nacos.client.NacosPropertySourceBuilder: WARN
+    org.apache.kafka.clients.admin.AdminClientConfig: WARN
+    org.apache.kafka.clients.producer.ProducerConfig: WARN
+    org.apache.kafka.clients.consumer.ConsumerConfig: WARN
+  file: ../logs/${spring.application.name}.log

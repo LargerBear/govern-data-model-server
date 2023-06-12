@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.freesofts.desktop.mapper.ComponentMapper">
+
+    <sql id="component_common_where_if">
+        is_del=0
+        <if test="componentQueryVO.key != null and componentQueryVO.key != ''">
+            and (name like concat('%', #{componentQueryVO.key}, '%') or id like concat('%',
+            #{componentQueryVO.key},'%'))
+        </if>
+        <if test="componentQueryVO.name != null and componentQueryVO.name != ''">
+            and name like concat('%', #{componentQueryVO.name}, '%')
+        </if>
+        <if test="componentQueryVO.type != null and componentQueryVO.type != ''">
+            and type =#{componentQueryVO.type}
+        </if>
+        <if test="componentQueryVO.state != null and componentQueryVO.state != ''">
+            and state =#{componentQueryVO.state}
+        </if>
+        <if test="componentQueryVO.startDate != null and componentQueryVO.startDate != ''">
+            and created_date &gt;= #{componentQueryVO.startDate}
+        </if>
+        <if test="componentQueryVO.endDate != null and componentQueryVO.endDate != ''">
+            and created_date &lt;= #{componentQueryVO.endDate}
+        </if>
+    </sql>
+
+    <select id="selectCount" resultType="java.lang.Long">
+        select count(*) from desktop_component
+        <where>
+            <include refid="component_common_where_if"/>
+        </where>
+    </select>
+
+    <select id="selectComponentList" resultType="com.freesofts.model.vo.ComponentVO">
+        select id,
+        name,
+        type,
+        (select name from desktop_category where id=type) typeName,
+        options,
+        sort,
+        description,
+        state,
+        created_by,
+        creator_name,
+        created_date,
+        last_modified_by,
+        last_modified_name,
+        last_modified_date,
+        part_data,
+        file_path
+        from desktop_component
+        <where>
+            <include refid="component_common_where_if"/>
+        </where>
+        order by created_date desc
+        limit #{pageNum}, #{pageSize}
+    </select>
+
+    <insert id="insert">
+        insert into desktop_component(id, name, type, options, sort, description, state, created_by, creator_name,
+                                      created_date, is_del, file_path, part_data)
+        values (#{component.id}, #{component.name}, #{component.type}, #{component.options}, #{component.sort},
+                #{component.description}, '0',
+                #{component.createdBy}, #{component.creatorName},
+                SYSDATE(), 0, #{component.filePath}, #{component.partData})
+    </insert>
+
+    <insert id="insertCategory">
+        insert into desktop_component_category
+        values (#{componentCategory.id}, #{componentCategory.categoryId}, #{componentCategory.componentId})
+    </insert>
+
+    <update id="deleteByIds">
+        update desktop_component
+        <set>
+            is_del = 1
+        </set>
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="update">
+        update desktop_component
+        <set>
+            <if test="component.name != null and component.name != ''">
+                name = #{component.name},
+            </if>
+            <if test="component.type != null and component.type != ''">
+                type = #{component.type},
+            </if>
+            <if test="component.sort != null and component.sort != ''">
+                sort = #{component.sort},
+            </if>
+            <if test="component.options != null and component.options != ''">
+                `options` = #{component.options},
+            </if>
+            <if test="component.description != null and component.description != ''">
+                `description` = #{component.description},
+            </if>
+            <if test="component.lastModifiedBy != null and component.lastModifiedBy != ''">
+                last_modified_by = #{component.lastModifiedBy},
+            </if>
+            <if test="component.lastModifiedName != null and component.lastModifiedName != ''">
+                last_modified_name = #{component.lastModifiedName},
+            </if>
+            <if test="component.lastModifiedDate != null and component.lastModifiedDate != ''">
+                last_modified_date =#{component.lastModifiedDate},
+            </if>
+            <if test="component.filePath != null and component.filePath != ''">
+                file_path =#{component.filePath},
+            </if>
+            <if test="component.partData != null and component.partData != ''">
+                part_data =#{component.partData}
+            </if>
+        </set>
+        where id =#{component.id}
+    </update>
+
+    <update id="updateOptions">
+        update desktop_component
+        <set>
+            <if test="data != null and data != ''">
+                options = #{data}
+            </if>
+        </set>
+        where id=#{componentId}
+    </update>
+
+    <update id="updateState">
+        update desktop_component
+        set state=#{state}
+        where id = #{id}
+    </update>
+    <update id="updateStaticData">
+        update desktop_component
+        <set>
+            <if test="componentVO.partData != null and componentVO.partData != ''">
+                part_data = #{componentVO.partData},
+            </if>
+            <if test="componentVO.options != null and componentVO.options != ''">
+                `options` = #{componentVO.options},
+            </if>
+            <if test="componentVO.filePath != null and componentVO.filePath != ''">
+                file_path = #{componentVO.filePath}
+            </if>
+            where id = #{id}
+        </set>
+    </update>
+
+    <select id="selectById" resultType="com.freesofts.model.vo.ComponentVO">
+        select *, (select name from desktop_category where id = type) typeName
+        from desktop_component
+        where id = #{id}
+    </select>
+
+    <insert id="insertCopy">
+        insert into desktop_component(id, name, type, options, sort, description, state, created_by, creator_name,
+                                      created_date, is_del, part_data, file_path)
+        select #{id},
+               #{name},
+               type,
+               options,
+               sort,
+               description,
+               state,
+               #{createdBy},
+               #{creatorName},
+               SYSDATE(),
+               0,
+               part_data,
+               file_path
+        from desktop_component
+        where id = #{componentId}
+    </insert>
+
+    <select id="selectCategoryId" resultType="java.lang.String">
+        select category_id
+        from desktop_component_category
+        where component_id = #{componentId}
+    </select>
+
+    <select id="selectOptions" resultType="java.lang.String">
+        select options
+        from desktop_component
+        where id = #{id}
+    </select>
+    <select id="selectName" resultType="java.lang.String">
+        select name
+        from desktop_component
+        where id = #{componentId}
+    </select>
+
+</mapper>

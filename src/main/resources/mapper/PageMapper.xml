@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.freesofts.desktop.mapper.PageMapper">
+
+    <sql id="page_common_where_if">
+        <if test="pageQueryVO.key != null and pageQueryVO.key != ''">
+            and (name like concat('%', #{pageQueryVO.key}, '%') or id like concat('%', #{pageQueryVO.key}, '%'))
+        </if>
+        <if test="pageQueryVO.name != null and pageQueryVO.name != ''">
+            and name like concat('%', #{pageQueryVO.name}, '%')
+        </if>
+        <if test="pageQueryVO.type != null and pageQueryVO.type != ''">
+            and type =pageQueryVO.type
+        </if>
+        <if test="pageQueryVO.startDate != null and pageQueryVO.startDate != ''">
+            and created_date &gt;= #{pageQueryVO.startDate}
+        </if>
+        <if test="pageQueryVO.endDate != null and pageQueryVO.endDate != ''">
+            and created_date &lt;= #{pageQueryVO.endDate}
+        </if>
+        <if test="pageQueryVO.tenantId != null and pageQueryVO.tenantId != ''">
+            and tenant_id = #{pageQueryVO.tenantId}
+        </if>
+    </sql>
+
+    <select id="selectCount" resultType="java.lang.Long">
+        select count(*) from desktop_page
+        <where>
+            <include refid="page_common_where_if"/>
+        </where>
+    </select>
+
+    <select id="selectPageList" resultType="com.freesofts.model.model.Page">
+        select id,
+        name,
+        type,
+        sort,
+        description,
+        created_by,
+        creator_name,
+        created_date,
+        last_modified_by,
+        last_modified_name,
+        last_modified_date,
+        file_path,
+        `lock`
+        from desktop_page
+        <where>
+            <include refid="page_common_where_if"/>
+        </where>
+        order by created_date desc
+        limit #{pageNum}, #{pageSize}
+    </select>
+
+    <insert id="insert">
+        insert into desktop_page(id, name, type, options, sort, description, created_by, creator_name, created_date,
+                                 tenant_id, `lock`)
+        values (#{page.id}, #{page.name}, #{page.type}, #{page.options}, #{page.sort}, #{page.description},
+                #{page.createdBy}, #{page.creatorName}, SYSDATE(), #{page.tenantId},0);
+
+        insert into desktop_page_category(id, category_id, page_id)
+        values (#{pageCategory.id}, #{pageCategory.categoryId}, #{pageCategory.pageId})
+    </insert>
+
+    <insert id="insertCategory">
+        insert into desktop_page_category(id, category_id, page_id)
+        VALUES (#{pageCategory.id}, #{pageCategory.categoryId}, #{pageCategory.pageId})
+    </insert>
+
+    <delete id="deleteByIds">
+        delete from desktop_page where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        ;
+        delete from desktop_page_category where page_id in
+        <foreach collection="pageIds" item="pageId" open="(" close=")" separator=",">
+            #{pageId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteCategory">
+        delete from desktop_page_category where page_id in
+        <foreach collection="pageIds" item="pageId" open="(" close=")" separator=",">
+            #{pageId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteLabelPageByIds">
+        delete from desktop_label where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+    <delete id="deletePageLabelByPageIds">
+        delete from desktop_page_label where desktop_page_label.page_id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <update id="update">
+        update desktop_page
+        <set>
+            <if test="page.name != null and page.name != ''">
+                name = #{page.name},
+            </if>
+            <if test="page.type != null and page.type != ''">
+                type = #{page.type},
+            </if>
+            <if test="page.sort != null and page.sort != ''">
+                sort = #{page.sort},
+            </if>
+            <if test="page.options != null and page.options != ''">
+                options = #{page.options},
+            </if>
+            <if test="page.filePath != null and page.filePath != ''">
+                file_path = #{page.filePath},
+            </if>
+            <if test="page.description != null and page.description != ''">
+                description = #{page.description},
+            </if>
+            <if test="page.lastModifiedBy != null and page.lastModifiedBy != ''">
+                last_modified_by = #{page.lastModifiedBy},
+            </if>
+            <if test="page.lastModifiedName != null and page.lastModifiedName != ''">
+                last_modified_name = #{page.lastModifiedName},
+            </if>
+            <if test="page.lastModifiedDate != null and page.lastModifiedDate != ''">
+                last_modified_date = #{page.lastModifiedDate},
+            </if>
+        </set>
+        where id =#{page.id}
+    </update>
+
+    <update id="updateOptions">
+        update desktop_page
+        <set>
+            <if test="data != null and data != ''">
+                options = #{data} ,
+            </if>
+            file_path = #{filePath}
+        </set>
+        where id=#{pageId}
+    </update>
+    <update id="updateLabelPage">
+        update desktop_label
+        <set>
+            <if test="tagsName != ''">
+                desktop_label.name = #{tagsName}
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    <update id="updateCategoryPage">
+        update desktop_page_category
+        set category_id = #{pageCategory.categoryId}
+        where page_id = #{pageCategory.pageId}
+    </update>
+    <update id="updateLock">
+        update desktop_page
+        <set>
+            <choose>
+                <when test="lock == 1">
+                    `lock` = 0, `password` = ''
+                </when>
+                <otherwise>
+                    `lock` = 1, `password` = #{password}
+                </otherwise>
+            </choose>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="selectOptions" resultType="java.lang.String">
+        select options
+        from desktop_page
+        where id = #{id}
+    </select>
+
+    <select id="selectById" resultType="com.freesofts.model.model.Page">
+        select *
+        from desktop_page
+        where id = #{id}
+    </select>
+
+    <insert id="insertCopy">
+        insert into desktop_page(id, name, type, options, sort, file_path, description, created_by, creator_name,
+                                 created_date)
+        select #{id},
+               concat(name, '复制') name,
+               type,
+               options,
+               sort,
+               file_path,
+               description,
+               #{createdBy},
+               #{creatorName},
+               SYSDATE()
+        from desktop_page
+        where id = #{pageId}
+    </insert>
+    <insert id="insertLabelPage">
+        insert into desktop_label(id, name, sort, created_by, creator_name, created_date,category_id)
+        values
+        <foreach collection="labelPages" item="labelPage" separator=",">
+            (
+            #{labelPage.id}, #{labelPage.name}, #{labelPage.sort}, #{labelPage.createdBy}, #{labelPage.creatorName},
+            #{labelPage.createdDate},#{labelPage.categoryId}
+            )
+        </foreach>
+        ;
+        insert into desktop_page_label(id, label_id, page_id)
+        VALUES
+        <foreach collection="pageLabels" item="pageLabel" separator=",">
+            (
+            #{pageLabel.id}, #{pageLabel.labelId}, #{pageLabel.pageId}
+            )
+        </foreach>
+    </insert>
+    <insert id="insertPageLabel">
+        insert into desktop_page_label(id, label_id, page_id)
+        VALUES
+        <foreach collection="pageLabels" item="pageLabel" separator=",">
+            (
+            #{pageLabel.id}, #{pageLabel.labelId}, #{pageLabel.pageId}
+            )
+        </foreach>
+    </insert>
+    <insert id="insertLabelPages">
+        insert into desktop_label(id, name, sort, created_by, creator_name, created_date,category_id)
+        values
+        <foreach collection="labelPages" item="labelPage" separator=",">
+            (
+            #{labelPage.id}, #{labelPage.name}, #{labelPage.sort}, #{labelPage.createdBy}, #{labelPage.creatorName},
+            #{labelPage.createdDate},#{labelPage.categoryId}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectCategoryId" resultType="java.lang.String">
+        select category_id
+        from desktop_page_category
+        where page_id = #{pageId}
+    </select>
+    <select id="selectTagsByPageId" resultType="java.lang.String">
+        SELECT desktop_label.name FROM desktop_label
+        LEFT JOIN desktop_page_label ON desktop_label.id = desktop_page_label.label_id
+        WHERE desktop_page_label.page_id
+        IN
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+        ORDER BY FIELD(desktop_page_label.page_id,
+        <foreach collection="ids" item="id" separator=",">
+            #{id}
+        </foreach>
+        )
+    </select>
+    <select id="selectTagsIdsByPageId" resultType="java.lang.String">
+        select desktop_page_label.label_id from desktop_page_label where desktop_page_label.page_id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+    <select id="selectTagsIdAndNameByPageId" resultType="com.freesofts.model.model.LabelPage">
+        SELECT desktop_label.id, desktop_label.name
+        FROM desktop_label
+                 LEFT JOIN desktop_page_label ON desktop_label.id = desktop_page_label.label_id
+        WHERE desktop_page_label.page_id = #{id}
+
+    </select>
+    <select id="selectTagsIdByPageId" resultType="java.lang.String">
+        select label_id
+        from desktop_page_label
+        where page_id = #{id}
+    </select>
+    <select id="selectCategoryName" resultType="java.lang.String">
+        select name
+        from desktop_category
+        where id = #{cId}
+    </select>
+    <select id="selectByIds" resultType="com.freesofts.model.model.Page">
+        select * from desktop_page
+        where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+</mapper>

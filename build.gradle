@@ -1,0 +1,69 @@
+plugins {
+    id 'org.springframework.boot' version '2.1.11.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+    id 'java'
+}
+
+group = 'com.freesofts'
+version = '2.1.0-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+configurations {
+    developmentOnly
+    runtimeClasspath {
+        extendsFrom developmentOnly
+    }
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+apply from: './repository.gradle'
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    implementation ('com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery:2.1.4.RELEASE') {
+        exclude group: 'com.alibaba.nacos', module: 'nacos-client'
+    }
+    implementation ('com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config:2.1.4.RELEASE') {
+        exclude group: 'com.alibaba.nacos', module: 'nacos-client'
+    }
+    implementation 'com.alibaba.nacos:nacos-client:2.2.1'
+
+    implementation 'org.springframework.cloud:spring-cloud-starter-oauth2'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+    // Application architecture extension package
+    implementation 'com.freesofts.common:gcs-framework-basic:2.1.0-SNAPSHOT'
+    implementation 'com.freesofts.model:gcs-user-model:2.1.0-SNAPSHOT'
+
+    implementation 'com.freesofts.starter:gcs-constants-starter:2.1.0-SNAPSHOT'
+    implementation 'com.freesofts.starter:gcs-notification-starter:2.1.0-SNAPSHOT'
+    implementation 'com.freesofts.starter:gcs-files-starter:2.1.0-SNAPSHOT'
+    implementation 'com.freesofts.starter:gcs-logs-starter:2.1.0-SNAPSHOT'
+
+    implementation 'com.freesofts.starter:gcs-document-starter:2.1.0-SNAPSHOT'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    runtimeOnly 'org.springframework.boot:spring-boot-devtools'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    //hutool
+    implementation 'cn.hutool:hutool-all:5.7.16'
+    //汉语拼音库
+    compile group: 'com.belerweb', name: 'pinyin4j', version: '2.5.0'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
