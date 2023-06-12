@@ -1,7 +1,6 @@
 package com.freesofts.model.mapper;
 
 import com.freesofts.model.model.Component;
-import com.freesofts.model.model.ComponentCategory;
 import com.freesofts.model.vo.ComponentQueryVO;
 import com.freesofts.model.vo.ComponentVO;
 import org.apache.ibatis.annotations.Mapper;
@@ -17,8 +16,6 @@ public interface ComponentMapper {
     int insertCopy(@Param("id") String id, @Param("componentId") String componentId, @Param("createdBy") String createdBy, @Param("creatorName") String creatorName,@Param("name") String name);
 
     String selectName(@Param("componentId") String componentId);
-
-    int insertCategory(@Param("componentCategory") ComponentCategory componentCategory);
 
     int deleteByIds(@Param("ids") List<String> ids);
 

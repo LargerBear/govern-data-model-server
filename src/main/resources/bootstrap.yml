@@ -39,7 +39,7 @@ knife4j:
     email: 123456789@qq.com
   document:
     groupName: govern-data-model-server
-    title: desktop
+    title: model
     basePackage: com.freesofts.model.controller
     version: 1.0.0
 feign:
